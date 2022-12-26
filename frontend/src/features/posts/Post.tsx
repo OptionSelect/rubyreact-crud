@@ -1,6 +1,6 @@
 import React from "react";
 
-function Post() {
+function Post(props: any) {
   return (
     <div>
       <h1>Post</h1>
