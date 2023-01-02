@@ -1,7 +1,15 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import produce from "immer";
 import { RootState, AppThunk } from "../../app/store";
-import { fetchPosts } from "./postAPI";
+import { fetchPosts, createPost } from "./postAPI";
+
+export interface PostFormData {
+  post: {
+    id?: string;
+    title: string;
+    body: string;
+  };
+}
 
 export enum Statuses {
   Initial = "Not Fetched",
@@ -68,9 +76,34 @@ export const postSlice = createSlice({
         return produce(state, (draftState) => {
           draftState.status = Statuses.Error;
         });
+      })
+      .addCase(createPostAsync.pending, (state) => {
+        return produce(state, (draftState) => {
+          draftState.status = Statuses.Loading;
+        });
+      })
+      .addCase(createPostAsync.fulfilled, (state, action) => {
+        return produce(state, (draftState) => {
+          draftState.posts.push(action.payload);
+          draftState.status = Statuses.UpToDate;
+        });
+      })
+      .addCase(createPostAsync.rejected, (state) => {
+        return produce(state, (draftState) => {
+          draftState.status = Statuses.Error;
+        });
       });
   },
 });
+
+export const createPostAsync = createAsyncThunk(
+  "posts/createPost",
+  async (payload: PostFormData) => {
+    const response = await createPost(payload);
+
+    return response;
+  }
+);
 
 export const {} = postSlice.actions;
 
